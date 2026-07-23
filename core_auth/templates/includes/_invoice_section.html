@@ -1,0 +1,120 @@
+{% load static %}
+{% load humanize %}
+<link rel="stylesheet" href="{% static 'css/invoice-section.css' %}">
+<div id="section-Billing" class="crm-section hidden">
+
+    <!-- Billing Header (Preserved exactly as requested) -->
+    <div class="page-header" style="display: flex; justify-content: space-between; align-items: flex-start;">
+        <div>
+            <h1 class="page-title">Billing & Invoicing</h1>
+            <p class="page-description">Manage invoices, payments, and billing cycles.</p>
+        </div>
+        <div class="action-button">
+            <a class="btn btn-primary" href="{% url 'generate_invoice' %}">+ New Bill</a>
+        </div>
+    </div>
+
+    <!-- Summary Metrics Layout Grid -->
+    <div class="metrics-grid">
+        <div class="metric-card">
+            <div class="metric-header-row">
+                <span class="metric-icon icon-danger">⏳</span>
+                <span class="metric-label">Outstanding Amount</span>
+            </div>
+            <h2 class="metric-value">₹{{ invoice_data.meta.total_outstanding|floatformat:0|intcomma }}<span class="decimal-sub">.00</span></h2>
+        </div>
+
+        <div class="metric-card">
+            <div class="metric-header-row">
+                <span class="metric-icon icon-success">💰</span>
+                <span class="metric-label">Collected</span>
+            </div>
+            <h2 class="metric-value">₹{{ invoice_data.meta.total_paid|floatformat:0|intcomma }}<span class="decimal-sub">.00</span></h2>
+        </div>
+
+        <div class="metric-card">
+            <div class="metric-header-row">
+                <span class="metric-icon icon-neutral">📝</span>
+                <span class="metric-label">Total Invoices</span>
+            </div>
+            <h2 class="metric-value">{{ invoice_data.meta.count }}</h2>
+        </div>
+    </div>
+
+    <!-- The Clean Feed Stack -->
+    <div class="feed-stack">
+        {% for invoice in invoice_data.invoice_list %}
+            <div class="feed-card {% if invoice.status == 'draft' %} border-draft {% else %}border-{{invoice.payment_status}} {% endif %}">
+                <div class="col-meta">
+                    <span class="meta-date"><span class="meta-icon">🗓️</span>{{ invoice.created_at }}</span>
+                    <span class="invoice-id">{{ invoice.Invoice_id }}</span>
+                    <span class="lifecycle-badge badge-{{ invoice.status }}">{{ invoice.status }}</span>
+                </div>
+
+                <div class="col-client">
+                    <div class="client-identity">
+                        <span class="client-avatar avatar-c{% cycle '1' '2' '3' '4' '5' %}">{% for word in invoice.customer_name.split %}
+                            {% if forloop.counter <= 2 %}{{ word|first|upper }}{% endif %}
+                        {% endfor %}
+                        </span>
+                        <div>
+                            <span class="client-name">{{ invoice.customer_name }}</span>
+                            <div class="badge-row">
+                                <span class="tag-badge badge-{{ invoice.project_type }}">{{ invoice.project_type }}</span>
+                                <span class="system-spec">{{ invoice.project_size }} KW</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="col-progress">
+                    <div class="progress-labels">
+                        <span class="progress-text">Collected: {% widthratio invoice.amount_paid invoice.grand_total 100 %}%</span>
+                        <span class="progress-text text-muted-dark">Due: ₹{{ invoice.balance_due}}</span>
+                    </div>
+                    <div class="progress-track-bg">
+                        <div class="progress-fill{% if invoice.status == 'draft' %} fill-draft{% else %} fill-{{ invoice.payment_status }}{% endif %}" style="width: {% if invoice.grand_total > 0 %}{% widthratio invoice.amount_paid invoice.grand_total 100 %}{% else %}0{% endif %}%;"></div>
+                    </div>
+                </div>
+
+                <div class="col-financials">
+                    <span class="grand-total">₹{{ invoice.grand_total|intcomma }}</span>
+                    <span class="status-pill {% if invoice.status == 'draft' %} pill-draft {% else %}pill-{{invoice.payment_status}} {% endif %}">{{ invoice.payment_status }}</span>
+                </div>
+
+                <div class="col-actions">
+                    {% if invoice.status == 'draft' %}
+                        <a class="action-tool-btn" title="View" href="{% url 'view_invoice' invoice.Invoice_id %}">👁️</a>
+                        <a class="action-tool-btn" title="Edit" href="{% url 'edit_invoice' invoice.Invoice_id %}">✏️</a>
+                        <form action="{% url 'finalize_invoice' invoice.Invoice_id %}" method="POST" style="margin: 0;" onsubmit="return confirm('Are you sure you want to finalize this invoice? You will no longer be able to edit it.');">
+                            {% csrf_token %}
+                            <button type="submit" class="action-tool-btn btn-action-success" title="Finalize Bill">
+                                ✔️
+                            </button>
+                        </form>
+                    {% else %}
+                        <a class="action-tool-btn" title="View" href="{% url 'view_invoice' invoice.Invoice_id %}">👁️</a>
+                        <button class="add-payment-btn" data-inv_id="{{ invoice.Invoice_id }}"">
+                            {% if invoice.payment_status == 'paid'%}
+                                <span class="icon">₹</span>VIEW
+                            {% else %}
+                                <span class="icon">₹</span>ADD
+                            {% endif %}
+                        </button>
+                    {% endif %}
+                </div>
+            </div>
+        {% empty %}
+            <div class="empty-state">
+                <div class="empty-state-icon">🧾</div>
+                <h3>No invoices yet</h3>
+                <p>Once you generate your first invoice, it'll show up here with live payment tracking.</p>
+                <a class="btn btn-primary" href="#">+ Create your first invoice</a>
+            </div>
+        {% endfor %}
+
+       
+
+    </div>
+</div>
+{% include 'includes/_payment_modal.html' %}

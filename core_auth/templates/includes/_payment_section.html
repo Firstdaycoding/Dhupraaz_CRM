@@ -1,0 +1,164 @@
+{% load static %}
+{% load humanize %}
+<link rel="stylesheet" href="{% static 'css/payment_section.css' %}">
+
+<div id="section-Payments" class="crm-section">
+    
+    <!-- Header Context -->
+    <div class="page-header" style="display: flex; justify-content: space-between; align-items: flex-start;">
+        <div>
+            <h1 class="page-title">Payments and transactions</h1>
+            <p class="page-description">Real-time ledger entries for incoming invoice clearings.</p>
+        </div>
+        <div class="action-button">
+            <a class="btn btn-primary" onclick="openInvoicePicker()">+ Add Payment</a>
+        </div>
+    </div>
+
+    <!-- Payment Summary & Date Filter Bar -->
+<div class="payments-filter-bar">
+    
+    <!-- Collected Amount Summary Card -->
+    <div class="summary-metric-card">
+        <div class="metric-icon-box">
+            <span class="metric-icon">💰</span>
+        </div>
+        <div class="metric-details">
+            <span class="metric-label">Total Collected</span>
+            <h3 class="metric-value-payment" id="collectedAmountDisplay">₹{{ payment_data.total|intcomma }}</h3>
+        </div>
+    </div>
+
+    <!-- Date Range Filter Form -->
+    <div class="date-filter-controls">
+        <div class="filter-input-group">
+            <label for="startDate">From</label>
+            <input type="date" id="startDate" name="start_date" class="date-picker-input" value="">
+        </div>
+
+        <div class="filter-input-group">
+            <label for="endDate">To</label>
+            <input type="date" id="endDate" name="end_date" class="date-picker-input" value="">
+        </div>
+
+        <div class="filter-actions">
+            <button type="button" class="btn-filter-apply" onclick="applyDateFilter()">Filter</button>
+            <a onclick="resetDateFilter()" class="btn-filter-reset" title="Reset Filters">↻</a>
+            <button type="button" id="toggleVoidBtn" onclick="toggleVoidPayments()" class="btn-filter-toggle">Hide Voided</button>
+        </div>
+    </div>
+
+</div>
+
+    <div class="payments-stream-stack">
+        
+         {% for payment in payment_data.payment_list %}
+            <div class="payment-activity-row {% if payment.is_voided %} row-is-voided {% endif %}">
+                
+                <!-- Visual Method Indicator -->
+                <div class="payment-method-icon-box upi-bg" title="{{ payment.method }}">
+                    <span class="method-icon-glyph">💸</span>
+                </div>
+
+                <!-- Core Details Segment -->
+                <div class="payment-primary-details">
+                    <div class="payment-meta-top">
+                        <!-- invoice.Invoice_id relationship -->
+                        <span class="invoice-link-tag">{{ payment.invoice }}</span>
+                        <span class="payment-timestamp">{{ payment.paid_on|date:"Y-m-d" }}</span>
+                    </div>
+                    <!-- prospect / client name via invoice relation if needed, or reference number -->
+                    <div class="payment-ref-line">
+                        <span class="ref-label">Ref:</span> <code class="ref-code">{{ payment.reference_no }}</code>
+                    </div>
+                </div>
+
+                <!-- Notes Context Area -->
+                <div class="payment-notes-segment">
+                    <p class="payment-note-text">{% if payment.is_voided %} {{ payment.voided_reason }} {% else %} {{ payment.notes }} {% endif %}</p>
+                </div>
+
+                <!-- Financials Output Block -->
+                <div class="payment-financial-block">
+                    <!-- amount attribute -->
+                    <div class="payment-amount-display">₹{{ payment.amount|intcomma }}</div>
+                    <!-- recorded_by field reference -->
+                    <div class="recorder-signature">by {{ payment.recorded_by }}</div>
+                </div>
+            </div>
+        {% endfor %}
+            <div id="paymentsEmptyState" class="payment-empty-state-card">
+                <div class="empty-state-icon-wrap">
+                    <span class="empty-state-icon">🗓️</span>
+                </div>
+                <div class="empty-state-content">
+                    <h4 class="empty-state-title">No transactions found</h4>
+                    <p class="empty-state-description">There are no valid payment entries recorded between the selected dates.</p>
+                </div>
+            </div>
+    </div>
+</div>
+
+<!-- Invoice Selection Modal -->
+<div id="invoicePickerModal" class="inv-picker-backdrop">
+    <div class="inv-picker-card">
+        
+        <!-- Header -->
+        <div class="inv-picker-header">
+            <div>
+                <h3 class="inv-picker-title">Select Invoice for Payment</h3>
+                <p class="inv-picker-subtitle">Choose an invoice with a pending balance to record a collection.</p>
+            </div>
+            <button class="inv-picker-close" onclick="closeInvoicePicker()">&times;</button>
+        </div>
+
+        <!-- Search Bar -->
+        <div class="inv-picker-search-wrap">
+            <span class="search-icon">🔍</span>
+            <input type="text" id="invoiceSearchInput" placeholder="Search by Invoice ID or Client name..." onkeyup="filterPickerInvoices()">
+        </div>
+
+        <!-- Invoices Scrollable List Container -->
+        <div class="inv-picker-list" id="invoicePickerList">
+            
+            {% for invoice in unpaid_invoices %}
+                <div class="inv-picker-item" 
+                    data-invoice-id="{{ invoice.Invoice_id }}" 
+                    data-client="{{ invoice.customer_name }}" 
+                    data-total="{{ invoice.grand_total }}" 
+                    data-paid="{{ invoice.amount_paid }}" 
+                    data-left="{{ invoice.balance_due }}">
+                    
+                    <div class="inv-item-main">
+                        <div class="inv-item-info">
+                            <span class="inv-id-badge">{{ invoice.Invoice_id }}</span>
+                            <h4 class="inv-client-name">{{ invoice.customer_name }}</h4>
+                        </div>
+                        <div class="inv-item-due">
+                            <span class="due-label">Amount Left</span>
+                            <span class="due-amount text-danger">₹{{ invoice.balance_due }}</span>
+                        </div>
+                    </div>
+
+                    <div class="inv-progress-track">
+                        <div class="inv-progress-fill" style="width: {% widthratio invoice.amount_paid invoice.grand_total 100 %}%;"></div>
+                    </div>
+
+                    <div class="inv-item-footer">
+                        <div class="inv-amounts-split">
+                            <span>Paid: <strong>₹{{ invoice.amount_paid }}</strong></span>
+                            <span class="dot-divider">•</span>
+                            <span>Grand Total: <strong>₹{{ invoice.grand_total }}</strong></span>
+                        </div>
+                        <button class="btn-select-invoice" data-inv_id="{{ invoice.Invoice_id }}">
+                            Select & Pay ➔
+                        </button>
+                    </div>
+                </div>
+            {% endfor %}
+
+        </div>
+    </div>
+</div>
+<script src="{% static 'js/payment_section.js' %}"></script>
+                {% include 'includes/_payment_modal.html' %}

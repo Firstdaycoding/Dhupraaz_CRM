@@ -1,0 +1,89 @@
+{% load static %}
+<link rel="stylesheet" href="{% static 'css/payment_modal.css' %}"
+<!-- ================= PAYMENT MODAL ================= -->
+<div id="payment-modal" class="modal-overlay hidden">
+  <div class="modal-card payment-modal-card">
+    <div class="modal-header">
+      <div>
+        <h3>Record Payment</h3>
+        <p id="payment-modal-invoice-id" class="subtext"><input type="text"></p>
+      </div>
+      <button type="button" class="close-modal-btn" id="close-payment-modal">✕</button>
+    </div>
+
+    <div class="modal-body">
+
+      <!-- Live balance summary -->
+      <div class="metrics-summary-grid payment-summary-grid">
+        <div class="metric-box">
+          <label>Grand Total</label>
+          <div id="payment-summary-total" class="metric-value">₹0.00</div>
+        </div>
+        <div class="metric-box">
+          <label>Already Paid</label>
+          <div id="payment-summary-paid" class="metric-value">₹0.00</div>
+        </div>
+        <div class="metric-box Highlight">
+          <label>Balance Due</label>
+          <div id="payment-summary-due" class="metric-value">₹0.00</div>
+        </div>
+      </div>
+
+      <!-- New payment form -->
+      <form id="payment-form">
+        <div class="payment-form-grid">
+          <div class="field">
+            <label>Amount (₹)</label>
+            <input type="number" id="payment-amount" min="0.01" step="0.01" required>
+          </div>
+          <div class="field">
+            <label>Date Paid</label>
+            <input type="date" id="payment-date" required>
+          </div>
+          <div class="field">
+            <label>Method</label>
+            <select id="payment-method">
+              <option value="cash">Cash</option>
+              <option value="bank_transfer">Bank Transfer / NEFT / RTGS</option>
+              <option value="upi">UPI</option>
+              <option value="cheque">Cheque</option>
+              <option value="other">Other</option>
+            </select>
+          </div>
+          <div class="field">
+            <label>Reference No.</label>
+            <input type="text" id="payment-reference" placeholder="UTR / Cheque No. / UPI ID">
+          </div>
+        </div>
+        <div class="field" style="margin-top:8px;">
+          <label>Notes</label>
+          <textarea id="payment-notes" rows="2" placeholder="Optional"></textarea>
+        </div>
+        <button type="submit" id="payment-submit-btn" class="btn btn-primary" style="margin-top:14px;">+ Add Payment</button>
+      </form>
+
+      <!-- Payment history -->
+      <h4 style="margin-top:22px;">Payment History</h4>
+      <div class="table-scroll-wrapper">
+        <table>
+          <thead>
+            <tr>
+              <th>Date</th>
+              <th>Amount</th>
+              <th>Method</th>
+              <th>Reference</th>
+              <th>Reverse</th>
+            </tr>
+          </thead>
+          <tbody id="payment-history-body">
+            <tr><td colspan="5" style="text-align:center; padding:15px; color:#999;">Loading…</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+    </div>
+  </div>
+</div>
+
+
+<script src="{% static 'js/payment_modal.js' %}"></script>

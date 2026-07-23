@@ -1,0 +1,264 @@
+{% load static quote_extras %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Solar Quotation</title>
+<link rel="stylesheet" href="{% static 'css/quote.css' %}">
+</head>
+<body data-quote-mode="{{ mode|default:'new' }}">
+ <div id="toast-container" aria-live="polite"></div>
+  <div class="toolbar">
+        <button class="back-btn" onclick="goToDashboard()"> ← Dashboard </button>
+    <h4>Solar Quotation Builder — A4</h4>
+    <div class="toolbar-actions">
+      {% if mode == "new" %}
+        <button id="add-item-btn" type="button">+ Add Item</button>
+        <button id="save-btn" type="button">Save Quote</button>
+        <button id="print-btn" type="button">Print / Save as PDF</button>
+      {% endif %}
+      {% if mode == "edit" %}
+        <button id="add-item-btn" type="button">+ Add Item</button>
+        <button id="update-btn" type="button">Update Quote</button>
+        <button id="print-btn" type="button">Print / Save as PDF</button>
+      {% endif %}
+      {% if mode == "view" %}
+        <button id="print-btn" type="button">Print / Save as PDF</button>
+      {% endif %}
+    </div>
+  </div>
+
+  <div class="page" id="quote-page">
+
+    <!-- ================= HEADER ================= -->
+    <header class="header">
+      <div class="logo-section">
+        <img src="{% static 'logo.png' %}" alt="Company Logo" class="logo" onerror="this.style.display='none'">
+        <div class="company-details">
+          <h1 id="company-name">DHUPRAAZ Solar Pvt. Ltd.</h1>
+          <p id="company-address">First Floor, Poddar Medical Hall, Lal Bazar, Bettiah, Bihar - 845438</p>
+          <p>Phone : <span id="company-phone">+91 92349 94359</span></p>
+          <p>Email : <span id="company-email">dhupraazspl@gmail.com</span></p>
+          <p>Website : <span id="company-website">www.dhupraaz.com</span></p>
+        </div>
+      </div>
+      <div class="doc-tag">
+        <p class="eyebrow">Estimate</p>
+        <h2>Quotation</h2>
+        <p class="gst-line">
+          <span class="gst-label">GSTIN :</span>
+          <span class="gst-value" id="gst-number">10AAMCD7274J1ZH</span>
+        </p>
+      </div>
+    </header>
+
+    <div class="cell-rule"></div>
+
+    <!-- ================= META STRIP ================= -->
+  
+    <section class="quotation-info">
+      <div>
+        <label>Quotation No.</label>
+        <input type="text" id="quotation-no" placeholder="0001" value="{{ quotation.Quote_id|default:'' }}" readonly>
+      </div>
+      <div>
+        <label>Date</label>
+        <input type="date" id="quotation-date" value="{{ quotation.Quotation_date|date:'Y-m-d'|default:'' }}" {% if mode == "view" %}readonly{% endif %}>
+      </div>
+      <div>
+        <label>Valid Till</label>
+        <input type="date" id="valid-date" value="{{ quotation.Valid_till|date:'Y-m-d'|default:'' }}" {% if mode == "view" %}readonly{% endif %}>
+      </div>
+    </section>
+
+    <!-- ================= CUSTOMER + PROJECT ================= -->
+    <section class="details-container">
+      <div class="card">
+        <h3>Customer Details</h3>
+        <div class="field"><label>Name</label><input type="text" id="customer-name" value="{{ quotation.customer_name|default:'' }}" {% if mode == "view" %}readonly{% endif %}></div>
+        <div class="field"><label>Phone</label><input type="text" id="customer-phone" value="{{ quotation.customer_phone|default:'' }}" {% if mode == "view" %}readonly{% endif %}></div>
+        <div class="field"><label>CA Number</label><input type="text" id="customer-ca-number" value="{{ quotation.customer_ca_number|default:'' }}" {% if mode == "view" %}readonly{% endif %}></div>
+        <div class="field"><label>Address</label><textarea id="customer-address" {% if mode == "view" %}readonly{% endif %}>{{ quotation.customer_address|default:'' }}</textarea></div>
+      </div>
+
+      <div class="card">
+        <h3>Project Details</h3>
+        <div class="field"><label>Project Type</label><select id="project-type" {% if mode == "view" %}readonly{% endif %}>
+          <option value="on-grid" {% if quotation.project_type == "on-grid" %}selected{% endif %}>On-Grid</option>
+          <option value="off-grid" {% if quotation.project_type == "off-grid" %}selected{% endif %}>Off-Grid</option>
+          <option value="hybrid" {% if quotation.project_type == "hybrid" %}selected{% endif %}>Hybrid</option>
+        </select></div>
+        <div class="field"><label>System Size</label><input type="text" id="system-size" placeholder="5 kW" value="{{ quotation.project_size|default:'' }}" {% if mode == "view" %}readonly{% endif %}></div>
+      </div>
+    </section>
+
+    <!-- ================= PRODUCT TABLE ================= -->
+    <section class="products-section">
+      <div class="table-header">
+        <h3>Products &amp; Services</h3>
+      </div>
+      <table>
+        <thead>
+            <tr>
+              <th>#</th>
+              <th>Description</th>
+              <th>Qty</th>
+              <th>Unit Price</th>
+              <th>GST %</th>
+              <th>Total</th>
+              <th></th>
+            </tr>
+        </thead>
+        <tbody id="items-body">
+          {% if quotation.items %}
+            {% for item in quotation.items %}
+            <tr>
+              <td class="num">{{ forloop.counter }}</td>
+
+              <td>
+                <div class="billing-search-wrapper">
+                    <input type="text" class="desc item-name-input{% if item.bom_snapshot %} bom-linked-item{% endif %}" placeholder="Search Template..." value="{{ item.description }}" autocomplete="off" {% if mode == "view" %}readonly{% endif %}>
+                    <button type="button" class="view-bom-btn" title="View BOM Breakdown">👁️</button>
+                    <input type="hidden" class="bom-snapshot-storage" name="bom_snapshot_{{ forloop.counter0 }}" value="{{ item.bom_snapshot|jsonify }}">
+                    {% if mode != "view" %}
+                    <div class="bom-suggestions-dropdown hidden"></div>
+                    {% endif %}
+                </div>
+              </td>
+
+              <td><input type="number" class="qty num" value="{{ item.quantity|default:1 }}" min="0" style="text-align:center" {% if mode == "view" %}readonly{% endif %}></td>
+              <td><input type="number" class="price num" value="{{ item.unit_price|default:0 }}" min="0" style="text-align:right" {% if mode == "view" %}readonly{% endif %}></td>
+              <td><input type="number" class="gst num" value="{{ item|item_gst }}" min="0" style="text-align:center" {% if mode == "view" %}readonly{% endif %}></td>
+              <td class="row-total num"><input type="number" class="row-total-input" value="{{ item.line_total|default:'0.00' }}" min="0" style="text-align:right" {% if mode == "view" %}readonly{% endif %}></td>
+              <td>{% if mode != "view" %}<button type="button" class="remove-row" title="Remove row">✕</button>{% endif %}</td>
+            </tr>
+            {% endfor %}
+          {% else %}
+            <tr>
+              <td class="num">1</td>
+              <td><div class="billing-search-wrapper">
+                  <input type="text" class="desc item-name-input" placeholder="e.g. 540W Mono PERC Solar Panel" value="" {% if mode == "view" %}readonly{% endif %} autocomplete="off">
+                  <button type="button" class="view-bom-btn" title="View BOM Breakdown">👁️</button>
+                  <input type="hidden" class="bom-snapshot-storage" name="bom_snapshot_0" value="">
+                  {% if mode != "view" %}
+                    <div class="bom-suggestions-dropdown hidden"></div>
+                  {% endif %}
+                </div></td>
+              <td><input type="number" class="qty num" value="1" min="0" style="text-align:center" {% if mode == "view" %}readonly{% endif %}></td>
+              <td><input type="number" class="price num" value="0" min="0" style="text-align:right" {% if mode == "view" %}readonly{% endif %}></td>
+              <td><input type="number" class="gst num" value="18" min="0" style="text-align:center" {% if mode == "view" %}readonly{% endif %}></td>
+              <td class="row-total num"><input type="number" class="row-total-input" value="0.00" style="text-align:right" {% if mode == "view" %}readonly{% endif %}></td>
+              <td>{% if mode != "view" %}<button type="button" class="remove-row" title="Remove row">✕</button>{% endif %}</td>
+            </tr>
+          {% endif %}
+        </tbody>
+      </table>
+    </section>
+
+    <!-- ================= TOTALS ================= -->
+    <section class="summary">
+      <div class="totals">
+        <div><span>Subtotal</span><input type="text" id="subtotal" readonly value="{{ quotation.subtotal|default:'0.00' }}"></div>
+        <div><span>GST</span><input type="text" id="gst-total" readonly value="{{ quotation.gst_total|default:'0.00' }}"></div>
+        <div><span>Discount (₹)</span><input type="number" id="discount" min="0" value="{{ quotation.discount|default:'0' }}" {% if mode == "view" %}readonly{% endif %}></div>
+        <div class="grand-total"><span>Grand Total</span><input type="text" id="grand-total" readonly value="{{ quotation.grand_total|default:'0.00' }}"></div>
+      </div>
+    </section>
+
+    
+<!-- ================= BANK DETAILS + TERMS (two-column, matches Customer/Project style) ================= -->
+<section class="details-container" style="margin-top:14px;">
+  <div class="card">
+    <h3>Bank Details</h3>
+    <div class="field"><label>Beneficiary</label><span class="static-value">DHUPRAAZ SOLAR PRIVATE LIMITED</span></div>
+    <div class="field"><label>Bank Name</label><span class="static-value">STATE BANK OF INDIA</span></div>
+    <div class="field"><label>Account No.</label><span class="static-value">45383893774</span></div>
+    <div class="field"><label>IFSC Code</label><span class="static-value">SBIN0012554</span></div>
+    <div class="field"><label>Branch</label><span class="static-value">BETTIAH BAZAR</span></div>
+  </div>
+
+  <div class="card">
+    <h3>Terms &amp; Conditions</h3>
+    <ol style="margin:0; padding-left:16px;">
+      <li style="font-size:10.5px; color:var(--ink-soft); margin-bottom:3px;">Quotation valid for 15 days from the date of issue.</li>
+      <li style="font-size:10.5px; color:var(--ink-soft); margin-bottom:3px;">Prices are inclusive of applicable taxes unless stated otherwise.</li>
+      <li style="font-size:10.5px; color:var(--ink-soft); margin-bottom:3px;">Installation begins after 7 to 10 days of payment confirmation.</li>
+      <li style="font-size:10.5px; color:var(--ink-soft); margin-bottom:3px;">Warranty terms apply as per manufacturer policy.</li>
+      <li style="font-size:10.5px; color:var(--ink-soft); margin-bottom:3px;">Transportation charges extra, if applicable.</li>
+      <li style="font-size:10.5px; color:var(--ink-soft); margin-bottom:3px;">All disputes are subject to BETTIAH jurisdiction only.</li>
+    </ol>
+  </div>
+</section>
+    <!-- ================= BENEFITS ================= -->
+    <section class="benefits">
+      <h3>Why Choose Solar</h3>
+      <ul>
+        <li>25 years panel performance warranty*</li>
+        <li>10 years inverter warranty*</li>
+        <li>MNRE approved components</li>
+        <li>Net metering assistance</li>
+        <li>Professional installation</li>
+        <li>Annual maintenance support</li>
+      </ul>
+    </section>
+    <div class="cell-rule" style="margin-top:16px;"></div>
+
+    <!-- ================= FOOTER ================= -->
+    <footer>
+      <div class="signature-box"><p>Customer Signature</p></div>
+      <div class="signature-box"><p>Authorized Signature</p></div>
+    </footer>
+
+  </div>
+  
+  <!-- BOM Snapshot View Modal Container -->
+<div id="bom-view-modal" class="modal-overlay hidden">
+  <div class="modal-card animate-fade-in">
+    <div class="modal-header">
+      <div>
+        <h3 id="modal-bom-name">BOM Package Configuration</h3>
+        <p id="modal-bom-meta" class="subtext"></p>
+      </div>
+      <button type="button" class="close-modal-btn" id="close-bom-modal">✕</button>
+    </div>
+    
+    <div class="modal-body">
+      <div class="metrics-summary-grid">
+        <div class="metric-box">
+          <label>System Capacity & Type</label>
+          <div id="modal-metric-size" class="metric-value">-</div>
+        </div>
+        <div class="metric-box">
+          <label>Configured Profit </label>
+          <div id="modal-metric-profit" class="metric-value">-</div>
+        </div>
+        <div class="metric-box Highlight">
+          <label>Grand Total (Inc. Margin)</label>
+          <div id="modal-metric-total" class="metric-value">-</div>
+        </div>
+      </div>
+
+      <h4>Component Breakdown Ledger</h4>
+      <div class="table-scroll-wrapper">
+        <table>
+          <thead>
+            <tr>
+              <th>Component Details</th>
+              <th style="text-align:center">Qty</th>
+              <th style="text-align:right">Rate</th>
+            </tr>
+          </thead>
+          <tbody id="modal-bom-items-body">
+            <!-- Dynamic rows injected here via JavaScript -->
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script src="{% static 'js/quote.js' %}"></script>
+
+</body>
+</html>

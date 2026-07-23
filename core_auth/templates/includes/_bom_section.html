@@ -1,0 +1,152 @@
+{% load static %}
+<link href="{% static 'css/bom.css'  %}" rel="stylesheet"/>
+<div id="section-System-Catalog-BOMs" class="crm-section hidden">
+
+    <!-- Header -->
+    <div class="page-header" style="display: flex; justify-content: space-between; align-items: flex-start;">
+        <div>
+            <h1 class="page-title">System Catalog / BOMs</h1>
+            <p class="page-description">Manage standard solar packages, hardware specifications, and internal cost breakups.</p>
+        </div>
+        <button id="open-bom-modal-btn" class="btn-primary-action">+ Create New BOM Package</button>
+    </div>
+
+    <!-- Filter & Metrics Bar -->
+    <div class="bom-control-bar">
+        <div class="filter-pills">
+            <button class="pill active" data-filter="all">All Packages</button>
+            <button class="pill" data-filter="on-grid">On-Grid</button>
+            <button class="pill" data-filter="hybrid">Hybrid</button>
+            <button class="pill" data-filter="off-grid">Off-Grid</button>
+        </div>
+        <!-- <div class="bom-stats">
+            <span>Total Templates: <strong>4</strong></span>
+        </div> -->
+    </div>
+
+    <!-- Sticky Note Cards Grid -->
+    <div class="bom-grid" id="bom-cards-container">
+        
+        {% for bom in boms %}
+            <div class="bom-note-card" data-type="{{bom.system_type}}">
+                <div class="pin-badge">📌 Official Spec</div>
+                <div class="card-top">
+                    <span class="system-badge" data-size="{{bom.system_size_kw}}">{{bom.system_size_kw}} kW</span>
+                    <span class="category-tag">{{bom.system_type}}</span>
+                </div>
+                <h3 class="package-title">{{bom.package_name}}</h3>
+                <div class="cost-summary-box">
+                    <div>
+                    <span class="label">Total Est. Cost</span>
+                    <div class="amount" id="bom-grand-total" data-total="{{ bom.grand_total }}">{{bom.grand_total}}</div>
+                    </div>
+                    <div class="unit-rate">
+                    <span class="label">Cost/kW</span>
+                    <span class="rate-val"></span>
+                    </div>
+                </div>
+            <div class="materials-wrapper">
+                <div class="materials-header">Key Equipment & Specs:</div>
+                <ul class="material-items">
+                        {% for item in bom.items %}
+                            <li><span class="qty">{{item.quantity}}x</span> <span class="item">{{item.description}}</span></li>
+                        {% endfor %}
+                </ul>
+            </div>
+                <div class="card-bottom">
+                    <span class="last-updated" data-updated="{{ bom.updated_at|date:'c' }}">Updated: Few days ago</span>
+                    <div class="card-btns">
+                        <button class="btn-card-action edit-bom-btn" title="Edit BOM Specs" data-id="{{bom.id}}">✏️ Edit</button>
+                    </div>
+                </div>
+        </div>
+        {% endfor %}
+
+        
+
+    </div>
+    </div>
+
+    <!-- ================= POP-UP EDIT/CREATE MODAL ================= -->
+    <div id="bom-modal-overlay" class="modal-overlay hidden">
+    <div class="bom-modal-content">
+        <div class="modal-header">
+        <h2 id="modal-title">Create System BOM Template</h2>
+        <button id="close-bom-modal" class="close-btn">&times;</button>
+        </div>
+
+        <form id="bom-form">
+        <div class="modal-body">
+            <div class="form-row dual">
+            <div>
+                <label>Package Name</label>
+                <input type="text" id="bom-package-name" placeholder="e.g. 5 kW On-Grid Commercial" required>
+            </div>
+            <div>
+                <label>System Type</label>
+                <select id="bom-type">
+                    <option value="on-grid">On-Grid</option>
+                    <option value="hybrid">Hybrid</option>
+                    <option value="off-grid">Off-Grid</option>
+                </select>
+            </div>
+            </div>
+
+            <div class="form-row dual">
+            <div>
+                <label>System Capacity (kW)</label>
+                <input type="number" step="0.1" id="bom-capacity" placeholder="5.0" required>
+            </div>
+    
+            </div>
+
+            <!-- Dynamic Components Builder -->
+            <div class="components-builder">
+            <div class="builder-header">
+                <h4>Bill of Materials Component Breakdown</h4>
+                <button type="button" id="add-bom-item-btn" class="btn-add-item">+ Add Item</button>
+            </div>
+            <div class="scroll-container">
+                <table class="builder-table">
+                    <thead>
+                    <tr>
+                        <th style="width: 50%;">Item Description / Spec</th>
+                        <th style="width: 20%;">Qty</th>
+                        <th style="width: 25%;">Est. Cost (₹)</th>
+                        <th style="width: 5%;"></th>
+                    </tr>
+                    </thead>
+                    <tbody id="bom-items-body" class="bom-items-body">
+                    <!-- Dynamic rows inserted here -->
+                    </tbody>
+                </table>
+            </div>
+            <div class="bom-totals-summary">
+                <div class="summary-row">
+                    <span>Items Base Total:</span>
+                    <strong id="modal-items-total">₹0.00</strong>
+                </div>
+                
+                <div class="summary-row margin-input-row">
+                    <label for="bom-margin-pct">Profit / Markup Margin:</label>
+                    <div class="margin-field">
+                        <input type="number" id="bom-margin-pct" value="1000" min="0" required>
+                    </div>
+                </div>
+
+                <div class="summary-row grand-total-row">
+                    <span>Grand Total (Target Price):</span>
+                    <strong id="modal-grand-total">₹0.00</strong>
+                </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="modal-footer">
+            <button type="button" id="cancel-bom-btn" class="btn-secondary">Cancel</button>
+            <button type="button" class="btn-primary-action" id="save-new-bom-btn">Save</button>
+        </div>
+        </form>
+    </div>
+</div>
+<script src="{% static 'js/bom.js' %}"></script>

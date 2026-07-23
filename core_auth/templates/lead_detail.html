@@ -1,0 +1,180 @@
+{% load static %}
+<link rel="stylesheet" href="{% static 'css/lead-section.css' %}">
+<link rel="stylesheet" href="{% static 'css/lead_detail.css' %}">
+
+<div id="lead-detail-page"
+     data-lead-id="{{ lead.id }}"'  
+     data-status="{{ lead.status }}">
+    <div id="toast" class="toast"></div>
+    <!-- ================= HEADER ================= -->
+    <div class="lead-detail-header">
+        <div class="lead-detail-identity">
+            <span class="client-avatar avatar-c1">{{ lead.name|slice:":2"|upper }}</span>
+            <div>
+                <h1 class="lead-detail-name">{{ lead.name }}</h1>
+                <div class="lead-detail-subline">
+                    <span>{{ lead.phone }}</span>
+                    {% if lead.email %}<span>· {{ lead.email }}</span>{% endif %}
+                </div>
+            </div>
+        </div>
+        <div class="lead-detail-header-actions">
+            <a href="{% url 'dashboard' %}" class="btn-outline" style="text-decoration:none;">← Dashboard</a>
+            <span class="status-pill
+                {% if lead.status == 'new' %}pill-new
+                {% elif lead.status == 'contacted' %}pill-contacted
+                {% elif lead.status == 'site_visit_scheduled' or lead.status == 'site_visit_done' %}pill-site-visit
+                {% elif lead.status == 'quoted' %}pill-quoted
+                {% elif lead.status == 'won' %}pill-won
+                {% elif lead.status == 'lost' %}pill-lost
+                {% endif %}" id="current-status-pill">{{ lead.get_status_display }}</span>
+            <button class="btn-outline" id="edit-lead-btn" type="button">✎ Edit</button>
+            <button class="btn btn-primary hidden" id="save-lead-btn" type="button">Save Changes</button>
+            <button class="btn-outline hidden" id="cancel-edit-btn" type="button">Cancel</button>
+        </div>
+    </div>
+
+    <!-- ================= INFO + PIPELINE GRID ================= -->
+    <div class="lead-detail-grid">
+
+        <!-- ---- LEFT: editable contact / project / referral ---- -->
+        <div class="detail-card">
+            <h3>Contact Details</h3>
+            <div class="field"><label>Name</label><input type="text" class="editable-field" id="edit-name" value="{{ lead.name }}" disabled></div>
+            <div class="field"><label>Phone</label><input type="text" class="editable-field" id="edit-phone" value="{{ lead.phone }}" disabled></div>
+            <div class="field"><label>Email</label><input type="email" class="editable-field" id="edit-email" value="{{ lead.email }}" disabled></div>
+            <div class="field"><label>Address</label><textarea class="editable-field" id="edit-address" disabled>{{ lead.address }}</textarea></div>
+
+            <h3 style="margin-top:18px;">Project Interest</h3>
+            <div class="field">
+                <label>Project Type</label>
+                <select class="editable-field" id="edit-project-type" disabled>
+                    <option value="" {% if not lead.project_type %}selected{% endif %}>-- Select --</option>
+                    <option value="on-grid" {% if lead.project_type == 'on-grid' %}selected{% endif %}>On-Grid</option>
+                    <option value="off-grid" {% if lead.project_type == 'off-grid' %}selected{% endif %}>Off-Grid</option>
+                    <option value="hybrid" {% if lead.project_type == 'hybrid' %}selected{% endif %}>Hybrid</option>
+                </select>
+            </div>
+            <div class="field"><label>Estimated Size</label><input type="text" class="editable-field" id="edit-system-size" value="{{ lead.estimated_system_size }}" disabled></div>
+            <div class="field"><label>Estimated Budget (₹)</label><input type="number" class="editable-field" id="edit-budget" value="{{ lead.estimated_budget|default:'' }}" disabled></div>
+
+            <h3 style="margin-top:18px;">Referral</h3>
+            <div class="field">
+                <label>Source</label>
+                <select class="editable-field" id="edit-referral-source" disabled>
+                    <option value="" {% if not lead.referral_source_type %}selected{% endif %}>-- Select --</option>
+                    <option value="existing_customer" {% if lead.referral_source_type == 'existing_customer' %}selected{% endif %}>Existing Customer</option>
+                    <option value="employee" {% if lead.referral_source_type == 'employee' %}selected{% endif %}>Employee</option>
+                    <option value="vendor_dealer" {% if lead.referral_source_type == 'vendor_dealer' %}selected{% endif %}>Vendor / Dealer</option>
+                    <option value="walk_in" {% if lead.referral_source_type == 'walk_in' %}selected{% endif %}>Walk-in</option>
+                    <option value="online_ad" {% if lead.referral_source_type == 'online_ad' %}selected{% endif %}>Online / Ad</option>
+                    <option value="website" {% if lead.referral_source_type == 'website' %}selected{% endif %}>Website</option>
+                    <option value="other" {% if lead.referral_source_type == 'other' %}selected{% endif %}>Other</option>
+                </select>
+            </div>
+            <div class="field"><label>Referred By</label><input type="text" class="editable-field" id="edit-referral-name" value="{{ lead.referral_name }}" disabled></div>
+        </div>
+
+        <!-- ---- RIGHT: pipeline status + follow-up ---- -->
+        <div class="detail-card">
+            <h3>Pipeline Status</h3>
+            <div class="field">
+                <label>Move to</label>
+                <select id="status-select">
+                    <option value="new" {% if lead.status == 'new' %}selected{% endif %}>New</option>
+                    <option value="contacted" {% if lead.status == 'contacted' %}selected{% endif %}>Contacted</option>
+                    <option value="site_visit_scheduled" {% if lead.status == 'site_visit_scheduled' %}selected{% endif %}>Site Visit Scheduled</option>
+                    <option value="site_visit_done" {% if lead.status == 'site_visit_done' %}selected{% endif %}>Site Visit Done</option>
+                    <option value="quoted" {% if lead.status == 'quoted' %}selected{% endif %} {% if lead.quotations.exists %}disabled{% endif %}>Quoted</option>
+                    <option value="won" {% if lead.status == 'won' %}selected{% endif %}>Won</option>
+                    <option value="lost" {% if lead.status == 'lost' %}selected{% endif %}>Lost</option>
+                </select>
+            </div>
+
+            <!-- Shown only when 'Lost' is selected -->
+            <div id="lost-reason-fields" class="hidden">
+                <div class="field">
+                    <label>Reason</label>
+                    <select id="lost-reason-select">
+                        <option value="price" {% if lead.lost_reason == 'price' %}selected{% endif %}>Price too high</option>
+                        <option value="competitor" {% if lead.lost_reason == 'competitor' %}selected{% endif %}>Went with a competitor</option>
+                        <option value="not_ready" {% if lead.lost_reason == 'not_ready' %}selected{% endif %}>Not ready yet</option>
+                        <option value="no_response" {% if lead.lost_reason == 'no_response' %}selected{% endif %}>Stopped responding</option>
+                        <option value="other" {% if lead.lost_reason == 'other' %}selected{% endif %}>Other</option>
+                    </select>
+                </div>
+                <div class="field">
+                    <label>Notes</label>
+                    <textarea id="lost-reason-notes-input">{{ lead.lost_reason_notes }}</textarea>
+                </div>
+            </div>
+
+            <button class="btn btn-primary" id="update-status-btn" type="button" style="width:100%; margin-top:6px;">Update Status</button>
+            <p class="status-hint" id="status-update-hint"></p>
+
+            <h3 style="margin-top:22px;">Follow-up Schedule</h3>
+            <div class="field">
+                <label>Next Follow-up Date</label>
+                <input type="date" id="followup-date-input" value="{{ lead.next_follow_up_date|date:'Y-m-d' }}">
+            </div>
+            <div class="quick-followup-row">
+                <button type="button" class="quick-followup-btn" data-days="1">+1 day</button>
+                <button type="button" class="quick-followup-btn" data-days="3">+3 days</button>
+                <button type="button" class="quick-followup-btn" data-days="7">+1 week</button>
+            </div>
+            <button class="btn-outline" id="save-followup-btn" type="button" style="width:100%; margin-top:10px;">Save Follow-up Date</button>
+
+            {% with quotation=lead.quotations.first %}
+            {% if quotation %}
+            <div class="conversion-banner">
+                ✓ Converted to Quote <strong>{{ quotation.Quote_id }}</strong>
+            </div>
+            {% elif lead.is_open %}
+            <a class="btn btn-primary" style="width:100%; margin-top:16px; text-align:center; text-decoration:none; display:block;"
+               href="{% url 'generate_quotation' %}?from_lead={{ lead.id }}">📄 Convert to Quote</a>
+            {% endif %}
+            {% endwith %}
+        </div>
+    </div>
+
+    <!-- ================= ACTIVITY TIMELINE ================= -->
+    <div class="detail-card" style="margin-top:20px;">
+        <h3>Activity & Notes</h3>
+
+        <form id="add-note-form">
+            <div class="add-note-row">
+                <select id="note-type-select">
+                    <option value="general">General Note</option>
+                    <option value="call">Call Log</option>
+                    <option value="meeting">Meeting Outcome</option>
+                    <option value="site_visit">Site Visit Outcome</option>
+                </select>
+                <textarea id="note-text-input" rows="2" placeholder="What happened? (call outcome, meeting notes, etc.)" required></textarea>
+            </div>
+            <button type="submit" class="btn btn-primary" id="add-note-btn">+ Add Note</button>
+        </form>
+
+        <div class="lead-timeline" id="lead-timeline">
+            {% for note in lead.notes.all %}
+            <div class="timeline-item" data-note-id="{{ note.id }}">
+                <div class="timeline-marker marker-{{ note.note_type }}"></div>
+                <div class="timeline-body">
+                    <div class="timeline-meta">
+                        <span class="timeline-type-tag">{{ note.get_note_type_display }}</span>
+                        <span class="timeline-date">{{ note.created_at|date:"M d, Y — g:i A" }}</span>
+                        {% if note.note_type != 'status_change' %}
+                        <button type="button" class="timeline-delete-btn" data-note-id="{{ note.id }}" title="Delete note">✕</button>
+                        {% endif %}
+                    </div>
+                    <p class="timeline-text">{{ note.note }}</p>
+                </div>
+            </div>
+            {% empty %}
+            <p class="timeline-empty">No activity logged yet. Add your first note above.</p>
+            {% endfor %}
+        </div>
+    </div>
+
+</div>
+
+<script src="{% static 'js/lead_detail.js' %}"></script>

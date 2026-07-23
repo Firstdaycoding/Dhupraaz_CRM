@@ -1,0 +1,93 @@
+{% load static %}
+<link rel="stylesheet" href="{% static 'css/lead-modal.css' %}">
+<!-- ================= NEW LEAD MODAL ================= -->
+<div id="new-lead-modal" class="modal-overlay hidden">
+  <div class="modal-card lead-modal-card">
+    <div class="modal-header">
+      <div>
+        <h3>Add New Lead</h3>
+        <p class="subtext">Capture a prospect and start tracking follow-ups.</p>
+      </div>
+      <button type="button" class="close-modal-btn" id="close-lead-modal">✕</button>
+    </div>
+
+    <div class="modal-body">
+      <form id="new-lead-form">
+
+        <h4 class="form-section-label">Contact</h4>
+        <div class="lead-form-grid">
+          <div class="field">
+            <label>Name *</label>
+            <input type="text" id="lead-name" required>
+          </div>
+          <div class="field">
+            <label>Phone *</label>
+            <input type="text" id="lead-phone" required>
+          </div>
+          <div class="field">
+            <label>Email</label>
+            <input type="email" id="lead-email">
+          </div>
+          <div class="field">
+            <label>Next Follow-up</label>
+            <input type="date" id="lead-followup-date">
+          </div>
+        </div>
+        <div class="field" style="margin-top:10px;">
+          <label>Address</label>
+          <textarea id="lead-address" rows="2"></textarea>
+        </div>
+
+        <h4 class="form-section-label">Project Interest</h4>
+        <div class="lead-form-grid">
+          <div class="field">
+            <label>Project Type</label>
+            <select id="lead-project-type">
+              <option value="">-- Select --</option>
+              <option value="on-grid">On-Grid</option>
+              <option value="off-grid">Off-Grid</option>
+              <option value="hybrid">Hybrid</option>
+            </select>
+          </div>
+          <div class="field">
+            <label>Estimated Size</label>
+            <input type="text" id="lead-system-size" placeholder="e.g. 5 kW">
+          </div>
+          <div class="field">
+            <label>Estimated Budget (₹)</label>
+            <input type="number" id="lead-budget" min="0" step="0.01">
+          </div>
+        </div>
+
+        <h4 class="form-section-label">Referral</h4>
+        <div class="lead-form-grid">
+          <div class="field">
+            <label>Source</label>
+            <select id="lead-referral-source">
+              <option value="">-- Select --</option>
+              <option value="existing_customer">Existing Customer</option>
+              <option value="employee">Employee</option>
+              <option value="vendor_dealer">Vendor / Dealer</option>
+              <option value="walk_in">Walk-in</option>
+              <option value="online_ad">Online / Ad</option>
+              <option value="website">Website</option>
+              <option value="other">Other</option>
+            </select>
+          </div>
+          <div class="field">
+            <label>Referred By</label>
+            <input type="text" id="lead-referral-name" placeholder="Name of person/campaign">
+          </div>
+        </div>
+
+        <div class="field" style="margin-top:10px;">
+          <label>Initial Note</label>
+          <textarea id="lead-initial-note" rows="2" placeholder="Optional — e.g. how the conversation went"></textarea>
+        </div>
+
+        <button type="submit" id="lead-submit-btn" class="btn btn-primary lead-submit-btn">+ Add Lead</button>
+      </form>
+    </div>
+  </div>
+</div>
+<script src="{% static 'js/lead-modal.js' %}"></script>

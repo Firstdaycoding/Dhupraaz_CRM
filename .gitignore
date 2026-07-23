@@ -1,0 +1,28 @@
+# Virtual Environment
+venv/
+env/
+.venv/
+
+# Environment Variables & Secrets (CRITICAL)
+.env
+.env.local
+*.env
+
+# Python Compiled Files & Cache
+__pycache__/
+*.py[cod]
+*$py.class
+
+# Local Database & Media Files
+db.sqlite3
+db.sqlite3-journal
+
+# IDE / Code Editor Files
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# OS Specific Files
+.DS_Store
+Thumbs.db

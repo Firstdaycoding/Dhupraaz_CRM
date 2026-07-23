@@ -1,0 +1,117 @@
+
+/* Premium Cyber-Dark CRM Table Styling */
+.table-container {
+    background: #0f172a; /* Deep tech slate-blue background */
+    border: 1px solid #1e293b; /* Subtle steel border */
+    border-radius: 12px;
+    overflow-x: auto;
+    margin-top: 20px;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.4); /* Elegant depth shadow */
+}
+
+.crm-table {
+    width: 100%;
+    border-collapse: collapse;
+    text-align: left;
+    font-size: 14px;
+}
+
+.crm-table th {
+    background-color: #1e293b; /* Distinct dark steel header row */
+    color: #38bdf8; /* Radiant sky-blue header text */
+    padding: 16px 18px;
+    font-weight: 600;
+    text-transform: uppercase;
+    font-size: 12px;
+    letter-spacing: 0.05em;
+    border-bottom: 2px solid #0f172a;
+}
+
+.crm-table td {
+    padding: 16px 18px;
+    color: #cbd5e1; /* Soft slate white for high readability */
+    border-bottom: 1px solid #1e293b;
+}
+
+/* Smooth row hover effect */
+.crm-table tr:hover {
+    background-color: #1e293b; /* Highlights the row on hover */
+    transition: background-color 0.2s ease;
+}
+
+/* Optimized Status Badge System */
+.status-badge {
+    padding: 6px 12px;
+    border-radius: 6px; /* Modern slightly rounded corners instead of pills */
+    font-size: 11px;
+    font-weight: 600;
+    text-transform: uppercase;
+    display: inline-block;
+    letter-spacing: 0.02em;
+}
+
+/* Color schemes mapped to your theme ecosystem */
+.status-active, .status-won { 
+    background: rgba(16, 185, 129, 0.15); 
+    color: #10b981; 
+    border: 1px solid rgba(16, 185, 129, 0.3);
+}
+.status-pending { 
+    background: rgba(245, 158, 11, 0.15); 
+    color: #f59e0b; 
+    border: 1px solid rgba(245, 158, 11, 0.3);
+}
+.status-lost { 
+    background: rgba(239, 68, 68, 0.15); 
+    color: #ef4444; 
+    border: 1px solid rgba(239, 68, 68, 0.3);
+}
+
+/* Action Link Utilities */
+.action-link {
+    color: #38bdf8;
+    text-decoration: none;
+    transition: color 0.2s ease;
+}
+
+.action-link:hover {
+    color: #7dd3fc;
+}
+
+.font-sm { font-size: 18px !important; vertical-align: middle; }
+.fw-bold { font-weight: 600; color: #fff; } /* Bright white for primary text like name */
+.text-muted { color: #64748b; padding: 40px !important; text-align: center; }
+
+
+.status-popup{
+
+    position:absolute;
+
+    display:none;
+
+    width:170px;
+
+    background: var(--surface-container);
+
+    border-radius:8px;
+
+    box-shadow:0 10px 25px rgba(0,0,0,.15);
+
+    z-index:1000;
+
+    overflow:hidden;
+
+}
+
+.status-option{
+    padding:12px;
+    cursor:pointer;
+    transition:.2s;
+    font-size:14px;
+    color:var(--text-primary);
+
+}
+
+.status-option:hover{
+    background:var(--sidebar-item-hover);
+}

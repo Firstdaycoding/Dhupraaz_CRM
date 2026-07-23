@@ -1,0 +1,93 @@
+{% load humanize %}
+<div id="section-Quotation" class="crm-section hidden">
+        <div class="page-header">
+            <div class="page-heading">
+                <h1 class="page-title">Generate Quotation</h1>
+                <p class="page-description">Create and customize quotations for your clients</p>
+            </div>
+            <div class="action-button">
+                {% if perms.core_auth.add_quotation %}
+                    <a class="btn btn-primary" href="{% url 'generate_quotation' %}">+ New Quotation</a>
+                {% endif %}
+            </div>
+        </div>
+        
+        <div class="table-container">
+            <table class="crm-table">
+                <thead>
+                    <tr>
+                        <th>Quote ID</th>
+                        <th>Customer Name</th>
+                        <th>Phone</th>
+                        <th>Address</th>
+                        <th>System Size</th>
+                        <th>Total Price</th>
+                        <th>Status</th>
+                        <th>Created At</th>
+                        <th>View</th>
+                        <th>Edit</th>
+                        <th>To Invoice</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for quote in quotations %}
+                    <tr>
+                        <td>#QT{{ quote.Quote_id }}</td>
+                        <td class="fw-bold">{{ quote.customer_name }}</td>
+                        <td>{{ quote.customer_phone }}</td>
+                        <td>{{ quote.customer_address }}</td>
+                        <td>{{ quote.project_size }} KW</td>
+                        <td>₹{{ quote.grand_total|intcomma }}</td>
+                        <td>
+                            <span class="status-badge status-{{ quote.status|lower|default:'pending' }}" 
+                                data-id="{{ quote.Quote_id }}"
+                                data-status="{{ quote.status}}">
+                                {{ quote.status }}
+                            </span>
+                        </td>
+                        <td>{{ quote.created_at|date:"M d, Y" }}</td>
+                        <td>
+                            <a href="{% url 'view_quote' quote.Quote_id %}" class="action-link text-primary">
+                                <span class="material-symbols-outlined font-sm">visibility</span>
+                            </a>
+                        </td>
+                        <td>
+                            <a href="{% url 'edit_quote' quote.Quote_id %}" class="action-link text-success">
+                                <span class="material-symbols-outlined font-sm">edit</span>
+                            </a>
+                        </td>
+                        <td>
+                            {% if quote.invoices.exists %}
+                                <a href="{% url 'view_invoice' quote.invoices.first.Invoice_id %}" class="action-link text-success">
+                                    <span class="material-symbols-outlined font-sm">receipt_long</span>
+                                </a>
+                            {% else %}
+                                <a href="{% url 'generate_invoice' %}?from_quote={{ quote.Quote_id }}" class="action-link text-success">
+                                    <span class="material-symbols-outlined font-sm">add_card</span>
+                                </a>
+                            {% endif %}
+                        </td>
+                    </tr>
+                    {% empty %}
+                    <tr>
+                        <td colspan="10" class="text-center text-muted">
+                            No quotations generated yet. Click "+ New Quotation" to construct your first draft specification sheet.
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <div id="status-popup" class="status-popup">
+        <div class="status-option" data-status="pending">
+            🟡 Pending
+        </div>
+        <div class="status-option" data-status="won">
+            🟢 Won
+        </div>
+        <div class="status-option" data-status="lost">
+            🔴 Lost
+        </div>
+    </div>

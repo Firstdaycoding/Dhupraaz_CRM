@@ -1,0 +1,149 @@
+{% load static %}
+<!DOCTYPE html>
+
+<html lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>DhupRaaz CRM</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="{% static 'css/style.css'  %}" rel="stylesheet"/>
+<link href="{% static 'css/quote-table.css'  %}" rel="stylesheet"/>
+
+
+</head>
+<body>
+<!-- SideNavBar Section -->
+    <aside id="sidebar">
+        <div class="logo-section">
+            <span class="logo-title">DhupRaaz CRM</span>
+            <span class="logo-subtitle">Enterprise Suite</span>
+        </div>
+        
+        <hr/>
+
+        <nav id="sidebar-nav">
+            <a class="nav-item active" data-section="Overview" href="#">
+                <span class="material-symbols-outlined">overview</span>
+                <span>Overview</span>
+            </a>
+            <a class="nav-item" data-section="Inventory" href="#">
+                <span class="material-symbols-outlined">inventory</span>
+                <span>Inventory</span>
+            </a>
+            <a class="nav-item" data-section="Leads" href="#">
+                <span class="material-symbols-outlined">groups</span>
+                <span>Leads</span>
+            </a>
+            <a class="nav-item" data-section="Quotation" href="#">
+                <span class="material-symbols-outlined">receipt_long</span>
+                <span>Quotation</span>
+            </a>
+            <a class="nav-item" data-section="System-Catalog-BOMs" href="#">
+                <span class="material-symbols-outlined">list_alt</span>
+                <span>System Catalog / BOMs</span>
+            </a>
+            <a class="nav-item" data-section="Billing" href="#">
+                <span class="material-symbols-outlined">request_quote</span>
+                <span>Billing</span>
+            </a>
+            <a class="nav-item" data-section="Payments" href="#">
+                <span class="material-symbols-outlined">payments</span>
+                <span>Payments</span>
+            </a>
+        </nav>
+
+        <!-- <div class="system-health-card">
+            <span class="health-label">System Health</span>
+            <div class="progress-bar-bg">
+                <div class="progress-bar-fill"></div>
+            </div>
+            <p class="health-status-text">80% Resources used</p>
+        </div> -->
+    </aside>
+<!-- Main Content Area -->
+    <div class="main-wrapper">
+<!-- TopNavBar Section -->
+        <header>
+            <div class="header-content">
+                <div class="search-container">
+                    <span class="material-symbols-outlined search-icon">search</span>
+                    <input class="search-input" placeholder="Global search..." type="text"/>
+                </div>
+                <div class="divider"></div>
+                <div class="user-profile">
+                    <div class="avatar">
+                        <img alt="User Avatar" src="{% static 'logo.png' %}"/>
+                    </div>
+                    {% if user_info %}
+                    <div class="user-info">
+                        <span class="user-name">{{ user_info.username }}</span>
+                        <span class="user-role">{{ user_info.role }}</span>
+                    </div>
+                    {% endif %}
+                </div>
+                <form id="logout-form" method="POST" action="{% url 'logout' %}" style="display: inline;">
+                    {% csrf_token %} 
+                    
+                    <button type="submit" class="logout-btn">
+                        <span class="material-symbols-outlined">logout</span>
+                        <span>Logout</span>
+                    </button>
+                </form>
+            </div>
+        </header>
+<!-- Dynamic Content Section -->
+        <main>
+            <div class="content-container">
+<!-- Section 1 - Empty -->
+
+                <div id="section-Overview" class="crm-section hidden">
+                    <div class="page-header">
+                        <h1 class="page-title">Dashboard Overview</h1>
+                        <p class="page-description">Real-time performance metrics and active pipelines</p>
+                    </div>
+                    <div class="content-placeholder">
+                        <p class="section-display">☀️ Solar Dashboard Analytics Container</p>
+                    </div>
+                </div>
+
+<!-- Section 2 - Empty -->
+
+                <div id="section-Inventory" class="crm-section hidden">
+                    <div class="page-header">
+                        <h1 class="page-title">Inventory Management</h1>
+                        <p class="page-description">Track and manage product inventory levels and stock movements</p>
+                    </div>
+                    <div class="content-placeholder">
+                        <p class="section-display">📦 Inventory Tracking & Stock Control</p>
+                    </div>
+                </div>
+
+<!-- Section 3 - Leads -->
+
+                {% include 'includes/_lead_section.html' %}
+
+<!-- Section 4 - Quotation -->
+
+                {% include 'includes/_quotation_section.html' %}
+
+<!-- Section 5 - Bill of Materials -->
+
+                {% include 'includes/_bom_section.html' %}
+
+<!-- Section 6 - Invoice/Billing -->
+
+                {% include 'includes/_invoice_section.html' %}
+
+<!-- Section 7 - Payments -->
+
+                {% include 'includes/_payment_section.html' %}
+
+            </div>
+        </main>
+    </div>
+    <div id="toast-container" class="toast-container"></div>
+    <script src="{% static 'js/script.js' %}"></script>
+</body>
+    
+</html>

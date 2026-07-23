@@ -1,0 +1,40 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>DUPRAAZ CRM - Login</title>
+    <style>
+        /* Quick styling to center the box on the screen */
+        body { display: flex; justify-content: center; align-items: center; height: 100vh; background-color: #111; color: white; font-family: sans-serif; }
+        h2 { margin-top: 0; margin-bottom: 40px; text-align: center; }
+        .login-card { background: #222; padding: 40px; border-radius: 8px; width: 300px; box-shadow: 0 4px 15px rgba(0,0,0,0.5); }
+        .input-group { margin-bottom: 20px; }
+        .input-group input { width: 100%; padding: 10px; background: #333; border: 1px solid #444; color: white; border-radius: 4px; box-sizing: border-box; }
+        .btn { width: 100%; padding: 10px; background: #007bff; border: none; color: white; border-radius: 4px; cursor: pointer; }
+    </style>
+</head>
+<body>
+
+    <div class="login-card">
+        <h2>DHUPRAAZ CRM - LOGIN</h2>
+        
+        <form method="POST" action="{% url 'login' %}">
+            {% csrf_token %}
+            
+            <div class="input-group">
+                <label>Username</label>
+                <input type="text" name="username" required>
+            </div>
+            
+            <div class="input-group">
+                <label>Password</label>
+                <input type="password" name="password" required>
+            </div>
+            
+            <button type="submit" class="btn">Sign In</button>
+        </form>
+    </div>
+
+</body>
+</html>

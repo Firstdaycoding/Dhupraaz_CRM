@@ -1,0 +1,202 @@
+{% load static %}
+<link rel="stylesheet" href="{% static 'css/lead-section.css' %}">
+<div id="section-Leads" class="crm-section hidden">
+
+    <!-- Leads Header -->
+    <div class="page-header" style="display: flex; justify-content: space-between; align-items: flex-start;">
+        <div>
+            <h1 class="page-title">Leads</h1>
+            <p class="page-description">Track prospects from first contact through conversion.</p>
+        </div>
+        <div class="action-button">
+            <a class="btn btn-primary" onclick="openNewLeadModal()">+ New Lead</a>
+        </div>
+    </div>
+
+    <!-- Summary Metrics -->
+    <div class="metrics-grid">
+        <div class="metric-card">
+            <div class="metric-header-row">
+                <span class="metric-icon icon-neutral">📋</span>
+                <span class="metric-label">Open Leads</span>
+            </div>
+            <h2 class="metric-value" id="metric-open-count">0</h2>
+        </div>
+        <div class="metric-card metric-card-alert">
+            <div class="metric-header-row">
+                <span class="metric-icon icon-danger">⚠️</span>
+                <span class="metric-label">Overdue Follow-ups</span>
+            </div>
+            <h2 class="metric-value" id="metric-overdue-count">0</h2>
+        </div>
+        <div class="metric-card">
+            <div class="metric-header-row">
+                <span class="metric-icon icon-success">🏆</span>
+                <span class="metric-label">Won (This Month)</span>
+            </div>
+            <h2 class="metric-value" id="metric-won-count">0</h2>
+        </div>
+        <div class="metric-card">
+            <div class="metric-header-row">
+                <span class="metric-icon icon-warning">📉</span>
+                <span class="metric-label">Lost (This Month)</span>
+            </div>
+            <h2 class="metric-value" id="metric-lost-count">0</h2>
+        </div>
+    </div>
+
+    <!-- ================= FILTER STRIP ================= -->
+    <div class="lead-filter-bar">
+        <div class="filter-search">
+            <span class="filter-search-icon">🔍</span>
+            <input type="text" id="lead-search-input" placeholder="Search by name, phone, or referral…">
+        </div>
+        <div class="filter-select-wrap">
+            <label>Status</label>
+            <select id="lead-status-filter">
+                <option value="">All Statuses</option>
+                <option value="new">New</option>
+                <option value="contacted">Contacted</option>
+                <option value="site_visit_scheduled">Site Visit Scheduled</option>
+                <option value="site_visit_done">Site Visit Done</option>
+                <option value="quoted">Quoted</option>
+                <option value="won">Won</option>
+                <option value="lost">Lost</option>
+            </select>
+        </div>
+        <div class="filter-select-wrap">
+            <label>Follow-up</label>
+            <select id="lead-followup-filter">
+                <option value="">All</option>
+                <option value="overdue">Overdue</option>
+                <option value="today">Due Today</option>
+                <option value="week">Next 7 Days</option>
+                <option value="none">No Date Set</option>
+            </select>
+        </div>
+        <div class="filter-select-wrap">
+            <label>Sort by</label>
+            <select id="lead-sort-select">
+                <option value="followup">Next Follow-up (Soonest)</option>
+                <option value="recent">Recently Added</option>
+                <option value="name">Name (A–Z)</option>
+            </select>
+        </div>
+        <span class="filter-result-count" id="lead-result-count">{{ lead_list|length }} leads</span>
+    </div>
+
+    <!-- ================= LEADS LIST ================= -->
+    <div class="lead-list">
+
+        <div class="lead-list-head">
+            <span class="col-lead">Lead</span>
+            <span class="col-project">Project</span>
+            <span class="col-referral">Referral</span>
+            <span class="col-status">Status</span>
+            <span class="col-followup">Next Follow-up</span>
+            <span class="col-actions">Action</span>
+        </div>
+
+        <!-- Row container: ALL rows live inside this single div -->
+        <div id="lead-rows-container">
+            {% for lead in lead_list %}
+            <div class="lead-row"
+                 data-lead-id="{{ lead.id }}"
+                 data-status="{{ lead.status }}"
+                 data-name="{{ lead.name|lower }}"
+                 data-phone="{{ lead.phone }}"
+                 data-referral="{{ lead.referral_name|lower }}"
+                 data-followup="{{ lead.next_follow_up_date|date:'Y-m-d'|default:'' }}"
+                 data-created="{{ lead.created_at|date:'Y-m-d\TH:i:s' }}"
+                 data-updated="{{ lead.updated_at|date:'Y-m-d\TH:i:s' }}"
+                 data-is-open="{{ lead.is_open|yesno:'1,0' }}"
+                 data-has-conversion="{{ lead.quotations.exists|yesno:'1,0' }}">
+
+                <div class="col-lead">
+                    <span class="client-avatar">{{ lead.name|slice:":2"|upper }}</span>
+                    <div class="lead-heading">
+                        <span class="client-name">{{ lead.name }}</span>
+                        <span class="lead-phone">{{ lead.phone }}</span>
+                    </div>
+                </div>
+
+                <div class="col-project">
+                    {% if lead.project_type %}
+                        <span class="tag-badge
+                            {% if lead.project_type == 'on-grid' %}badge-blue
+                            {% elif lead.project_type == 'off-grid' %}badge-red
+                            {% elif lead.project_type == 'hybrid' %}badge-purple
+                            {% endif %}">
+                            {{ lead.get_project_type_display }}
+                        </span>
+                    {% endif %}
+                    {% if lead.estimated_system_size %}
+                        <span class="system-spec">{{ lead.estimated_system_size }}</span>
+                    {% endif %}
+                </div>
+
+                <div class="col-referral">
+                    {% if lead.status == 'lost' %}
+                        <span class="referral-name lost-reason-text">✕ {{ lead.get_lost_reason_display|default:"Lost" }}</span>
+                    {% else %}
+                        <span class="referral-name">{{ lead.referral_name|default:"—" }}</span>
+                        {% if lead.referral_source_type %}
+                            <span class="referral-source-chip">{{ lead.get_referral_source_type_display }}</span>
+                        {% endif %}
+                    {% endif %}
+                </div>
+
+                <div class="col-status">
+                    <span class="status-pill
+                        {% if lead.status == 'new' %}pill-new
+                        {% elif lead.status == 'contacted' %}pill-contacted
+                        {% elif lead.status == 'site_visit_scheduled' or lead.status == 'site_visit_done' %}pill-site-visit
+                        {% elif lead.status == 'quoted' %}pill-quoted
+                        {% elif lead.status == 'won' %}pill-won
+                        {% elif lead.status == 'lost' %}pill-lost
+                        {% endif %}">
+                        {{ lead.get_status_display }}
+                    </span>
+                </div>
+
+                <div class="col-followup">
+                    {% with quotation=lead.quotations.last %}
+                    {% if quotation and lead.status == 'won' %}
+                        <span class="linked-doc-chip">Quotation id:{{ quotation.Quote_id }}</span>
+                    {% elif lead.status == 'lost' %}
+                        <span class="followup-text">Closed {{ lead.updated_at|date:"Y M d" }}</span>
+                    {% elif lead.next_follow_up_date %}
+                        <span class="followup-dot"></span>
+                        <span class="followup-text" data-date="{{ lead.next_follow_up_date|date:"Y M d" }}">{{ lead.next_follow_up_date|date:"Y M d" }}</span>
+                    {% else %}
+                        <span class="followup-text" style="color:#cbd5e1;">No date set</span>
+                    {% endif %}
+                    {% endwith %}
+                </div>
+
+                <div class="col-actions">
+                    <a class="icon-btn" title="View" href="{% url 'lead_detail' lead.id %}">👁️</a>
+                    {% with quotation=lead.quotations.last %}
+                    {% if lead.is_open and not quotation %}
+                        <span class="already-converted-tag"><a href="{% url 'generate_quotation' %}?from_lead={{ lead.id }}" style="text-decoration:none;">📄 Quote it</a></span>
+                    {% elif quotation %}
+                        <span class="already-converted-tag"><a href="{% url 'view_quote' quotation.Quote_id %}" style="text-decoration:none;">View Quote</a></span>
+                    {% endif %}
+                    {% endwith %}
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+
+        <!-- Empty state: sits OUTSIDE the loop, toggled by JS based on rendered row count -->
+        <div class="empty-state" id="lead-empty-state">
+            <div class="empty-state-icon">🧲</div>
+            <h3 id="lead-empty-title">No leads yet</h3>
+            <p id="lead-empty-text">New leads you add will show up here.</p>
+        </div>
+
+    </div>
+</div>
+
+{% include "includes/lead_modal.html" %}
+<script src="{% static 'js/lead_section.js' %}"></script>
