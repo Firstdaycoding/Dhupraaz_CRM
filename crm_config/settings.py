@@ -26,12 +26,8 @@ SECRET_KEY = os.getenv('SECRET_KEY', 'django-insecure-local-dev-key')
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = False
 
-ALLOWED_HOSTS = [
-    'localhost',
-    '127.0.0.1',
-    '.koyeb.app',
-    # Add your custom domain here once connected (e.g., '.yourdomain.com')
-]
+ALLOWED_HOSTS = []   # Add your custom domain here once connected (e.g., '.yourdomain.com')
+
 
 # Application definition
 
@@ -80,10 +76,16 @@ WSGI_APPLICATION = 'crm_config.wsgi.application'
 # Database
 # https://docs.djangoproject.com/en/6.0/ref/settings/#databases
 
+# DATABASES = {
+#     'default': dj_database_url.config(
+#         default=os.environ.get('DATABASE_URL'),
+#         conn_max_age=600
+#     )
+# }
 DATABASES = {
     'default': dj_database_url.config(
-        default=os.environ.get('DATABASE_URL'),
-        conn_max_age=600
+        default=f'sqlite:///{BASE_DIR / "db.sqlite3"}',
+        conn_max_age=600,
     )
 }
 
